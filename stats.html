@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINETIC Stats - MOMENUM LABS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-description {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+            padding: 40px;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.98);
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 KINETIC Stats</h1>
+        <div class="subtitle">Real-time usage analytics from MOMENUM LABS</div>
+
+        <div id="stats-container" class="loading">
+            Loading stats...
+        </div>
+
+        <button class="refresh-btn" onclick="loadStats()">🔄 Refresh Stats</button>
+        
+        <div class="last-updated" id="last-updated"></div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            const container = document.getElementById('stats-container');
+            container.innerHTML = '<div class="loading">Loading stats...</div>';
+
+            try {
+                const baseUrl = 'https://api.countapi.xyz/get/momenum-kinetic';
+                
+                // Fetch all stats
+                const [opens, created, completed] = await Promise.all([
+                    fetch(`${baseUrl}/app-opens`).then(r => r.json()),
+                    fetch(`${baseUrl}/habits-created`).then(r => r.json()),
+                    fetch(`${baseUrl}/habits-completed`).then(r => r.json())
+                ]);
+
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="emoji">👀</span>App Opens</div>
+                        <div class="stat-value">${opens.value || 0}</div>
+                        <div class="stat-description">Total times KINETIC was opened</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="emoji">➕</span>Habits Created</div>
+                        <div class="stat-value">${created.value || 0}</div>
+                        <div class="stat-description">Total habits added by all users</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="emoji">✅</span>Habits Completed</div>
+                        <div class="stat-value">${completed.value || 0}</div>
+                        <div class="stat-description">Total habits checked off</div>
+                    </div>
+                `;
+
+                container.innerHTML = statsHTML;
+                
+                const now = new Date().toLocaleString();
+                document.getElementById('last-updated').textContent = `Last updated: ${now}`;
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <div style="color: #ef4444; text-align: center;">
+                            ❌ Error loading stats
+                            <div style="font-size: 12px; margin-top: 8px; color: #94a3b8;">
+                                Try refreshing the page
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load stats on page load
+        loadStats();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
